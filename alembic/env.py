@@ -24,9 +24,13 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = Base_metadata
+# Add app directory to sys.path so we can import core/schema directly
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../app")))
+
+from core import Base
+from schema import User  # Ensure the User model is loaded
+
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
