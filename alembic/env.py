@@ -22,13 +22,8 @@ config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# Add app directory to sys.path so we can import core/schema directly
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../app")))
-
 from core import Base
-from schema import User  # Ensure the User model is loaded
+import schema  # Ensure all models are loaded
 
 target_metadata = Base.metadata
 
