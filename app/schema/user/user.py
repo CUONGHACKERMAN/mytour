@@ -9,7 +9,7 @@ class UserBase:
     @declared_attr
     def __table_args__(cls):
         return {"schema": "user"}
-        
+
 class User(UserBase, DomainBaseModel):
     __tablename__ = "user"
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)

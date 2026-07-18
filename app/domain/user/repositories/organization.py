@@ -1,5 +1,6 @@
 from core import BaseRepository
 from schema.user import Organization
-from sqlalchemy.ext.asyncio import AsyncSession
 
 class OrganizationRepository(BaseRepository):
+    async def __init__(self, session):
+        super().__init__(Organization, session)

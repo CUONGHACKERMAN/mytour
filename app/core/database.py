@@ -17,11 +17,18 @@ except SQLAlchemyError as e:
     print(f"Error connecting to the database: {e}")
 
 SessionLocal = async_sessionmaker(
-    autocommit=False, 
-    autoflush=False, 
+    autocommit=False,
+    autoflush=False,
     bind=engine,
 )
 
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 class Base(DeclarativeBase):
-    pass
-    
+    def to_dict(self):
+            return {column.name: getattr(self, column.name) for column in self.__table__.columns}
