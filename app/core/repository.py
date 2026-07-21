@@ -1,5 +1,5 @@
 from typing import Type, List, Optional, Any, Dict
-from database import Base
+from .database import Base
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
 
@@ -26,18 +26,13 @@ class BaseRepository:
         return result.scalars().all()
 
     async def update(self, item: Dict[str, Any]) -> Optional[Any]:
-        stmt = update(self.__model)
-                .where(self.__model.id == item['id'])
-                .values(**item)
-                .returning(self.__model)
+        stmt = update(self.__model).where(self.__model.id == item['id']).values(**item).returning(self.__model)
         result = await self.__session.execute(stmt)
         await self.__session.commit()
         return result.scalar_one_or_none()
 
     async def delete(self, item: Dict[str, Any]) -> Optional[Any]:
-        stmt = delete(self.__model)
-                .where(self.__model.id == item['id'])
-                .returning(self.__model)
+        stmt = delete(self.__model).where(self.__model.id == item['id']).returning(self.__model)
         result = await self.__session.execute(stmt)
         await self.__session.commit()
         return result.scalar_one_or_none()

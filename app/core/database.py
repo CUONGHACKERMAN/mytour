@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
+from typing import AsyncGenerator
 import os
 from dotenv import load_dotenv
 from sqlalchemy.orm import DeclarativeBase
@@ -8,26 +9,26 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-try:
-    engine = create_async_engine(DATABASE_URL, echo = True)
-    with engine.connect() as connection:
-        print("Successfully connect to the database")
-
-except SQLAlchemyError as e:
-    print(f"Error connecting to the database: {e}")
+engine = create_async_engine(DATABASE_URL, echo = True)
 
 SessionLocal = async_sessionmaker(
+    bind=engine,
+    class_=AsyncSession,
     autocommit=False,
     autoflush=False,
-    bind=engine,
+    expire_on_commit=False
 )
 
-def get_db():
+async def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
-        db.close()
+        await db.close()
+
+async def get_db():
+    async with SessionLocal() as session:
+        yield session
 
 class Base(DeclarativeBase):
     def to_dict(self):
