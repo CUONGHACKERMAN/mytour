@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from .service import UserService
+from .dto import CreateUserDto
 from core.database import get_db
 
 router = APIRouter(prefix='/user', tags=["User"])
@@ -10,9 +11,9 @@ router = APIRouter(prefix='/user', tags=["User"])
     status_code=status.HTTP_201_CREATED
 )
 async def create_user(
-    payload: dict = Body(...),
+    payload: CreateUserDto,
     db: AsyncSession = Depends(get_db)
 ):
     service = UserService(db)
-    return await service.create_user(payload)
+    return await service.create_user(payload.model_dump())
 
