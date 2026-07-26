@@ -9,4 +9,7 @@ typing_extensions==4.16.0
 fastapi
 uvicorn
 pydantic
+pydantic-settings
 asyncpg
+passlib[bcrypt]
+pyjwt[crypto]
