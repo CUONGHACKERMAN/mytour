@@ -24,3 +24,10 @@ class AuthService:
             phone=user.get('phone')
         )
         return self.__jwt_service.create_jwt_token(context)
+
+    def verify_jwt_token(self, token: str) -> AuthorizationContext:
+        return self.__jwt_service.verify_jwt_token(token)
+
+    def invalidate_user_session(self, token: str) -> bool:
+        return self.__jwt_service.invalid_jwt_token(token)
+

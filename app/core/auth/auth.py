@@ -10,5 +10,6 @@ class AuthorizationContext(BaseModel):
     phone: Optional[str] = None
     iat: Optional[datetime] = None
     exp: Optional[datetime] = None
+    jti: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
