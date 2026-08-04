@@ -10,4 +10,4 @@ class SignUpDto(BaseModel):
     password: str
     first_name: str
     last_name: str
-    phone: Optional[str] = None
+    phone: str

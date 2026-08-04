@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials
+from fastapi import APIRouter, Response, Depends, HTTPException, status
 from core.auth import AuthorizationContext
 from domain.user import UserService, get_user_service
 from .service import AuthService
-from .dependency import get_auth_service, get_current_user, security
+from .dependency import get_auth_service, get_current_user
 from .dto import SignInDto, SignUpDto
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -15,6 +14,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 )
 async def sign_in(
     payload: SignInDto,
+    response: Response,
     user_service: UserService = Depends(get_user_service),
     auth_service: AuthService = Depends(get_auth_service)
 ):
@@ -36,19 +36,27 @@ async def sign_in(
     ## Token grant
     token = auth_service.create_user_session(user)
 
-    return {"access_token": token, "token_type": "bearer"}
+    response.set_cookie(
+        key="id_token",
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=3600
+    )
+
+    return {"Sign-in sucessfully"}
 
 @router.post(
     "/sign-out",
     status_code=status.HTTP_200_OK
 )
 async def sign_out(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    response: Response,
     context: AuthorizationContext = Depends(get_current_user),
     auth_service: AuthService = Depends(get_auth_service),
 ):
-    token = credentials.credentials
-    auth_service.invalidate_user_session(token)
+    response.delete_cookie(key="id_token")
     return {"message": "User signed out successfully"}
 
 @router.post(
