@@ -39,3 +39,5 @@ async def update_user(
     service: UserService = Depends(get_user_service)
 ):
     return await service.update_user(user_id, payload.model_dump())
+
+

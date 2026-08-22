@@ -89,3 +89,14 @@ async def sign_up(
     })
 
     return {"message": "User created successfully"}
+
+
+@router.get(
+    "/me",
+    status_code=status.HTTP_200_OK,
+    response_model=AuthorizationContext
+)
+async def get_me(
+    current_user: AuthorizationContext = Depends(get_current_user)
+):
+    return current_user
