@@ -18,3 +18,4 @@ env/
 # IDE settings
 .vscode/
 .idea/
+services/*
