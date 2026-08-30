@@ -1,151 +1,50 @@
+
 import uuid
-from typing import List, Optional
-from datetime import date
-from enum import Enum as PyEnum
-
-from sqlalchemy import String, Text, Numeric, ForeignKey, Column, Table, Date, Enum as SAEnum, Uuid
+from sqlalchemy import Uuid, String, Integer, Boolean, ForeignKey, Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.ext.declarative import declared_attr
+from .types import Role
+from .base import UserBase
 
-# Assuming you import your core base model just like in the user module
-from core import DomainBaseModel 
 
-# ==========================================
-# BASE & ENUMS
-# ==========================================
-class TourBase:
-    @declared_attr
-    def __table_args__(cls):
-        return {"schema": "tour"}
-
-class TourStatus(str, PyEnum):
-    DRAFT = "DRAFT"
-    ACTIVE = "ACTIVE"
-    CLOSED = "CLOSED"
-
-class ServiceType(str, PyEnum):
-    HOTEL = "HOTEL"
-    TRANSFER = "TRANSFER"
-    MEAL = "MEAL"
-    ACTIVITY = "ACTIVITY"
-    GUIDE = "GUIDE"
-
-# ==========================================
-# ASSOCIATION TABLES (Many-to-Many)
-# ==========================================
-# Note: For explicit tables, we must define the schema directly
-template_category_assoc = Table(
-    "template_category",
-    DomainBaseModel.metadata,
-    Column("template_id", Uuid, ForeignKey("tour.tour_template.id", ondelete="CASCADE"), primary_key=True),
-    Column("category_id", Uuid, ForeignKey("tour.tour_category.id", ondelete="CASCADE"), primary_key=True),
-    schema="tour"
-)
-
-template_destination_assoc = Table(
-    "template_destination",
-    DomainBaseModel.metadata,
-    Column("template_id", Uuid, ForeignKey("tour.tour_template.id", ondelete="CASCADE"), primary_key=True),
-    Column("destination_id", Uuid, ForeignKey("tour.destination.id", ondelete="CASCADE"), primary_key=True),
-    schema="tour"
-)
-
-# ==========================================
-# MODELS
-# ==========================================
-
-class TourCategory(TourBase, DomainBaseModel):
-    __tablename__ = "tour_category"
-    
+class User(UserBase):
+    __tablename__ = "user"
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    name: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
-    
-    templates: Mapped[List["TourTemplate"]] = relationship(
-        secondary=template_category_assoc, back_populates="categories"
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    phone: Mapped[str] = mapped_column(String(15), nullable=False)
+    first_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    password: Mapped[str] = mapped_column(String, nullable=False)
+
+    memberships: Mapped[list["OrganizationMember"]] = relationship(
+        "OrganizationMember", back_populates="user", cascade="all, delete-orphan"
     )
 
-
-class Destination(TourBase, DomainBaseModel):
-    __tablename__ = "destination"
-
+class Organization(UserBase):
+    __tablename__ = "organization"
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    name: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
-    country: Mapped[str] = mapped_column(String(100), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    slug: Mapped[str] = mapped_column(String(255), unique=True, nullable=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False)
+    phone: Mapped[str] = mapped_column(String(15), nullable=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=True)
+    address: Mapped[str] = mapped_column(String(255), nullable=True)
 
-    templates: Mapped[List["TourTemplate"]] = relationship(
-        secondary=template_destination_assoc, back_populates="destinations"
+    members: Mapped[list["OrganizationMember"]] = relationship(
+        "OrganizationMember", back_populates="organization", cascade="all, delete-orphan"
     )
 
 
-class TourTemplate(TourBase, DomainBaseModel):
-    __tablename__ = "tour_template"
 
-    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)  
-    title: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
-    duration_days: Mapped[int] = mapped_column(nullable=False)
-    base_price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
-    status: Mapped[TourStatus] = mapped_column(SAEnum(TourStatus), default=TourStatus.DRAFT, nullable=False)
-    
-    inclusions: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    exclusions: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    internal_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-
-    # Relationships
-    categories: Mapped[List["TourCategory"]] = relationship(
-        secondary=template_category_assoc, back_populates="templates"
-    )
-    destinations: Mapped[List["Destination"]] = relationship(
-        secondary=template_destination_assoc, back_populates="templates"
-    )
-    departures: Mapped[List["TourDeparture"]] = relationship(
-        back_populates="template", cascade="all, delete-orphan"
-    )
-    itinerary_days: Mapped[List["ItineraryDay"]] = relationship(
-        back_populates="template", cascade="all, delete-orphan"
-    )
-
-
-class TourDeparture(TourBase, DomainBaseModel):
-    __tablename__ = "tour_departure"
-
+class OrganizationMember(UserBase):
+    __tablename__ = "organization_member"
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    
-    # Notice the foreign key specifies the 'tour' schema explicitly
-    template_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("tour.tour_template.id", ondelete="CASCADE"), nullable=False)
-    
-    start_date: Mapped[date] = mapped_column(Date, index=True, nullable=False)
-    end_date: Mapped[date] = mapped_column(Date, nullable=False)
-    actual_price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
-    max_capacity: Mapped[int] = mapped_column(nullable=False)
-    current_bookings: Mapped[int] = mapped_column(default=0, nullable=False)
+    role: Mapped[Role] = mapped_column(SAEnum(Role), default=Role.MEMBER, nullable=False)
+    organization_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("user.organization.id", ondelete = "CASCADE"), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("user.user.id", ondelete = "CASCADE"), nullable=False)
 
-    template: Mapped["TourTemplate"] = relationship(back_populates="departures")
-
-
-class ItineraryDay(TourBase, DomainBaseModel):
-    __tablename__ = "itinerary_day"
-
-    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    template_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("tour.tour_template.id", ondelete="CASCADE"), nullable=False)
-    
-    day_number: Mapped[int] = mapped_column(nullable=False)
-    title: Mapped[str] = mapped_column(String(150), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-
-    template: Mapped["TourTemplate"] = relationship(back_populates="itinerary_days")
-    services: Mapped[List["TourService"]] = relationship(
-        back_populates="itinerary_day", cascade="all, delete-orphan"
+    organization: Mapped["Organization"] = relationship(
+        "Organization", back_populates="members"
     )
-
-
-class TourService(TourBase, DomainBaseModel):
-    __tablename__ = "tour_service"
-
-    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    itinerary_day_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("tour.itinerary_day.id", ondelete="CASCADE"), nullable=False)
-    
-    service_type: Mapped[ServiceType] = mapped_column(SAEnum(ServiceType), nullable=False)
-    title: Mapped[str] = mapped_column(String(150), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    
-    itinerary_day: Mapped["ItineraryDay"] = relationship(back_populates="services")
+    user: Mapped["User"] = relationship(
+        "User", back_populates="memberships"
+    )
