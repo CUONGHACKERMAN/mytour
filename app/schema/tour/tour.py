@@ -2,57 +2,10 @@ import uuid
 from typing import List, Optional
 from datetime import date
 from enum import Enum as PyEnum
-
 from sqlalchemy import String, Text, Numeric, ForeignKey, Column, Table, Date, Enum as SAEnum, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.ext.declarative import declared_attr
-
-# Assuming you import your core base model just like in the user module
-from core import DomainBaseModel 
-
-# ==========================================
-# BASE & ENUMS
-# ==========================================
-class TourBase:
-    @declared_attr
-    def __table_args__(cls):
-        return {"schema": "tour"}
-
-class TourStatus(str, PyEnum):
-    DRAFT = "DRAFT"
-    ACTIVE = "ACTIVE"
-    CLOSED = "CLOSED"
-
-class ServiceType(str, PyEnum):
-    HOTEL = "HOTEL"
-    TRANSFER = "TRANSFER"
-    MEAL = "MEAL"
-    ACTIVITY = "ACTIVITY"
-    GUIDE = "GUIDE"
-
-# ==========================================
-# ASSOCIATION TABLES (Many-to-Many)
-# ==========================================
-# Note: For explicit tables, we must define the schema directly
-template_category_assoc = Table(
-    "template_category",
-    DomainBaseModel.metadata,
-    Column("template_id", Uuid, ForeignKey("tour.tour_template.id", ondelete="CASCADE"), primary_key=True),
-    Column("category_id", Uuid, ForeignKey("tour.tour_category.id", ondelete="CASCADE"), primary_key=True),
-    schema="tour"
-)
-
-template_destination_assoc = Table(
-    "template_destination",
-    DomainBaseModel.metadata,
-    Column("template_id", Uuid, ForeignKey("tour.tour_template.id", ondelete="CASCADE"), primary_key=True),
-    Column("destination_id", Uuid, ForeignKey("tour.destination.id", ondelete="CASCADE"), primary_key=True),
-    schema="tour"
-)
-
-# ==========================================
-# MODELS
-# ==========================================
+from core import DomainBaseModel
 
 class TourCategory(TourBase, DomainBaseModel):
     __tablename__ = "tour_category"
@@ -80,7 +33,7 @@ class Destination(TourBase, DomainBaseModel):
 class TourTemplate(TourBase, DomainBaseModel):
     __tablename__ = "tour_template"
 
-    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)  
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)   
     title: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
     duration_days: Mapped[int] = mapped_column(nullable=False)
     base_price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
@@ -149,3 +102,37 @@ class TourService(TourBase, DomainBaseModel):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     itinerary_day: Mapped["ItineraryDay"] = relationship(back_populates="services")
+
+class TourBase(DomainBaseModel):
+    __abstract__ = True
+    @declared_attr
+    def __table_args__(cls):
+        return {"schema": "tour"}
+class TourStatus(str, PyEnum):
+    DRAFT = "DRAFT"
+    ACTIVE = "ACTIVE"
+    CLOSED = "CLOSED"
+
+class ServiceType(str, PyEnum):
+    HOTEL = "HOTEL"
+    TRANSFER = "TRANSFER"
+    MEAL = "MEAL"
+    ACTIVITY = "ACTIVITY"
+    GUIDE = "GUIDE"
+
+
+template_category_assoc = Table(
+    "template_category",
+    DomainBaseModel.metadata,
+    Column("template_id", Uuid, ForeignKey("tour.tour_template.id", ondelete="CASCADE"), primary_key=True),
+    Column("category_id", Uuid, ForeignKey("tour.tour_category.id", ondelete="CASCADE"), primary_key=True),
+    schema="tour"
+)
+
+template_destination_assoc = Table(
+    "template_destination",
+    DomainBaseModel.metadata,
+    Column("template_id", Uuid, ForeignKey("tour.tour_template.id", ondelete="CASCADE"), primary_key=True),
+    Column("destination_id", Uuid, ForeignKey("tour.destination.id", ondelete="CASCADE"), primary_key=True),
+    schema="tour"
+)
