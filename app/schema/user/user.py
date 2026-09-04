@@ -38,7 +38,7 @@ class Organization(UserBase):
 class OrganizationMember(UserBase):
     __tablename__ = "organization_member"
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    role: Mapped[Role] = mapped_column(SAEnum(Role), default=Role.MEMBER, nullable=False)
+    role: Mapped[Role] = mapped_column(SAEnum(Role, schema="user"), default=Role.MEMBER, nullable=False)
     organization_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("user.organization.id", ondelete = "CASCADE"), nullable=False)
     user_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("user.user.id", ondelete = "CASCADE"), nullable=False)
 

@@ -20,7 +20,7 @@ class TourTemplate(TourBase):
     total_days: Mapped[int] = mapped_column(nullable=False)
     total_nights: Mapped[int] = mapped_column(nullable=False)
     base_price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
-    status: Mapped[TourStatus] = mapped_column(SAEnum(TourStatus), default=TourStatus.DRAFT, nullable=False)
+    status: Mapped[TourStatus] = mapped_column(SAEnum(TourStatus, schema="tour"), default=TourStatus.DRAFT, nullable=False)
 
     # TODO: Tour boundary type enum (e.g. TourBoundaryType):
     # - DOMESTIC: Domestic travelers within their home country
@@ -67,9 +67,9 @@ class TourDeparture(TourBase):
     start_date: Mapped[date] = mapped_column(Date, index=True, nullable=False)
     end_date: Mapped[date] = mapped_column(Date, nullable=False)
     # TODO: actual_price shouldn't be in departure, but in its own price table (tour_departure_price)
-    actual_price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
+    # actual_price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
     max_capacity: Mapped[int] = mapped_column(nullable=False)
-    current_bookings: Mapped[int] = mapped_column(default=0, nullable=False)
+    # current_bookings: Mapped[int] = mapped_column(default=0, nullable=False)
 
     template: Mapped["TourTemplate"] = relationship(back_populates="departures")
 
@@ -85,22 +85,22 @@ class ItineraryDay(TourBase):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     template: Mapped["TourTemplate"] = relationship(back_populates="itinerary_days")
-    services: Mapped[List["TourService"]] = relationship(
-        back_populates="itinerary_day", cascade="all, delete-orphan"
-    )
+    # services: Mapped[List["TourService"]] = relationship(
+    #     back_populates="itinerary_day", cascade="all, delete-orphan"
+    # )
 
 
-class TourService(TourBase):
-    __tablename__ = "tour_service"
+# class TourService(TourBase):
+#     __tablename__ = "tour_service"
 
-    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    itinerary_day_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("tour.itinerary_day.id", ondelete="CASCADE"), nullable=False)
+#     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+#     itinerary_day_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("tour.itinerary_day.id", ondelete="CASCADE"), nullable=False)
 
-    service_type: Mapped[ServiceType] = mapped_column(SAEnum(ServiceType), nullable=False)
-    title: Mapped[str] = mapped_column(String(150), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+#     service_type: Mapped[ServiceType] = mapped_column(SAEnum(ServiceType, schema="tour"), nullable=False)
+#     title: Mapped[str] = mapped_column(String(150), nullable=False)
+#     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
-    itinerary_day: Mapped["ItineraryDay"] = relationship(back_populates="services")
+#     itinerary_day: Mapped["ItineraryDay"] = relationship(back_populates="services")
 
 
 class Service(TourBase):
@@ -108,7 +108,7 @@ class Service(TourBase):
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(150), index=True, nullable=False)
-    service_type: Mapped[ServiceType] = mapped_column(SAEnum(ServiceType), nullable=False)
+    service_type: Mapped[ServiceType] = mapped_column(SAEnum(ServiceType, schema="tour"), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     template_services: Mapped[List["TourTemplateService"]] = relationship(
@@ -134,13 +134,13 @@ class TourTemplateService(TourBase):
 
 
 
-# template_category_assoc = Table(
-#     "template_category",
-#     DomainBaseModel.metadata,
-#     Column("template_id", Uuid, ForeignKey("tour.tour_template.id", ondelete="CASCADE"), primary_key=True),
-#     Column("category_id", Uuid, ForeignKey("tour.tour_category.id", ondelete="CASCADE"), primary_key=True),
-#     schema="tour"
-# )
+template_category_assoc = Table(
+    "template_category",
+    DomainBaseModel.metadata,
+    Column("template_id", Uuid, ForeignKey("tour.tour_template.id", ondelete="CASCADE"), primary_key=True),
+    Column("category_id", Uuid, ForeignKey("tour.tour_category.id", ondelete="CASCADE"), primary_key=True),
+    schema="tour"
+)
 
 # template_destination_assoc = Table(
 #     "template_destination",

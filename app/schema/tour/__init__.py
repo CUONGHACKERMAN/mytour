@@ -5,7 +5,6 @@ from .tour import (
     TourCategory,
     TourDeparture,
     ItineraryDay,
-    TourService,
     Service,
     TourTemplateService,
 )
@@ -18,7 +17,6 @@ __all__ = [
     "TourCategory",
     "TourDeparture",
     "ItineraryDay",
-    "TourService",
     "Service",
     "TourTemplateService",
 ]
