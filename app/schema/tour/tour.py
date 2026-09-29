@@ -4,7 +4,7 @@ from datetime import date
 from sqlalchemy import String, Text, Numeric, ForeignKey, Column, Table, Date, Enum as SAEnum, Uuid, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .types import TourStatus, ServiceType
+from .types import TourStatus, ServiceType, TourBoundaryType
 from .base import TourBase
 from core import DomainBaseModel
 
@@ -27,7 +27,7 @@ class TourTemplate(TourBase):
     # - INBOUND: Foreign travelers coming into the country (Destination Management Company / DMC)
     # - OUTBOUND: Local resident travelers traveling abroad
     # - CROSS_BORDER / REGIONAL: Tours spanning multiple international countries
-    # boundary_type: Mapped[TourBoundaryType] = mapped_column(SAEnum(TourBoundaryType), nullable=False)
+    boundary_type: Mapped[TourBoundaryType] = mapped_column(SAEnum(TourBoundaryType), nullable=False)
 
     internal_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 

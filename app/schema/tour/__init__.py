@@ -1,4 +1,4 @@
-from .types import TourStatus, ServiceType
+from .types import TourStatus, ServiceType, TourBoundaryType
 from .base import TourBase
 from .tour import (
     TourTemplate,
@@ -12,6 +12,7 @@ from .tour import (
 __all__ = [
     "TourStatus",
     "ServiceType",
+    "TourBoundaryType",
     "TourBase",
     "TourTemplate",
     "TourCategory",
@@ -20,3 +21,4 @@ __all__ = [
     "Service",
     "TourTemplateService",
 ]
+

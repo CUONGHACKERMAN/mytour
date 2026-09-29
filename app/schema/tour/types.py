@@ -11,3 +11,10 @@ class ServiceType(str, Enum):
     MEAL = "MEAL"
     ACTIVITY = "ACTIVITY"
     GUIDE = "GUIDE"
+
+class TourBoundaryType(str, Enum):
+    DOMESTIC = "DOMESTIC"
+    INBOUND = "INBOUND"
+    OUTBOUND = "OUTBOUND"
+    CROSS_BORDER = "CROSS_BORDER"
+

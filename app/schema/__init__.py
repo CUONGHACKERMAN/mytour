@@ -4,6 +4,7 @@ from .tour import (
     TourBase,
     TourStatus,
     ServiceType,
+    TourBoundaryType,
     TourTemplate,
     TourCategory,
     TourDeparture,
@@ -21,6 +22,7 @@ __all__ = [
     "TourBase",
     "TourStatus",
     "ServiceType",
+    "TourBoundaryType",
     "TourTemplate",
     "TourCategory",
     "TourDeparture",
@@ -28,3 +30,4 @@ __all__ = [
     "Service",
     "TourTemplateService",
 ]
+
