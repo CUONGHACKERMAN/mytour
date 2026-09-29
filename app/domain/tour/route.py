@@ -17,6 +17,7 @@ from .dto import (
 
 router = APIRouter(prefix="/tour", tags=["Tour"])
 
+## TODO: Write template code & departure code autogenrator AAAA_0ad9m1
 
 def get_tour_service(session: AsyncSession = Depends(get_db)) -> TourService:
     return TourService(session)
@@ -89,7 +90,7 @@ async def update_template(
         )
     return updated
 
-
+# TODO: Change this to soft delete
 @router.delete(
     "/templates/{template_id}",
     status_code=status.HTTP_200_OK,
@@ -168,7 +169,7 @@ async def update_category(
         )
     return updated
 
-
+# TODO: Change this to soft delete
 @router.delete(
     "/categories/{category_id}",
     status_code=status.HTTP_200_OK,

@@ -36,7 +36,7 @@ class TourService:
         return updated.to_dict() if updated else None
 
     async def delete_template(self, template_id: UUID) -> Optional[dict]:
-        deleted = await self.__template_repo.delete({"id": template_id})
+        deleted = await self.__template_repo.delete(template_id)
         return deleted.to_dict() if deleted else None
 
     async def create_category(self, category_data: dict) -> dict:
@@ -61,7 +61,7 @@ class TourService:
         return updated.to_dict() if updated else None
 
     async def delete_category(self, category_id: UUID) -> Optional[dict]:
-        deleted = await self.__category_repo.delete({"id": category_id})
+        deleted = await self.__category_repo.delete(category_id)
         return deleted.to_dict() if deleted else None
 
     async def create_departure(self, departure_data: dict) -> dict:
@@ -86,5 +86,5 @@ class TourService:
         return updated.to_dict() if updated else None
 
     async def delete_departure(self, departure_id: UUID) -> Optional[dict]:
-        deleted = await self.__departure_repo.delete({"id": departure_id})
+        deleted = await self.__departure_repo.delete(departure_id)
         return deleted.to_dict() if deleted else None

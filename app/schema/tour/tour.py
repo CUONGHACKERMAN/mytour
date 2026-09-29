@@ -14,6 +14,7 @@ class TourTemplate(TourBase):
     __tablename__ = "tour_template"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    ## TODO: CHECK IF CODE IS UNIQUE CONSTRAINT
     template_code: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     name: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
     duration_days: Mapped[int] = mapped_column(nullable=False)
@@ -22,14 +23,15 @@ class TourTemplate(TourBase):
     base_price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
     status: Mapped[TourStatus] = mapped_column(SAEnum(TourStatus, schema="tour"), default=TourStatus.DRAFT, nullable=False)
 
-    # TODO: Tour boundary type enum (e.g. TourBoundaryType):
+    # DONE: Tour boundary type enum (e.g. TourBoundaryType):
     # - DOMESTIC: Domestic travelers within their home country
     # - INBOUND: Foreign travelers coming into the country (Destination Management Company / DMC)
     # - OUTBOUND: Local resident travelers traveling abroad
     # - CROSS_BORDER / REGIONAL: Tours spanning multiple international countries
-    boundary_type: Mapped[TourBoundaryType] = mapped_column(SAEnum(TourBoundaryType), nullable=False)
+    boundary_type: Mapped[TourBoundaryType] = mapped_column(SAEnum(TourBoundaryType, schema="tour"), nullable=False)
 
     internal_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # TODO: ADD CURRENCY COLUMN WITH ENUM DATATYPE (VND, USD, EUR)
 
     # Relationships
     categories: Mapped[List["TourCategory"]] = relationship(
@@ -60,6 +62,7 @@ class TourDeparture(TourBase):
     __tablename__ = "tour_departure"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    ## TODO: CHECK IF CODE IS UNIQUE CONSTRAINT
     code: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     # Notice the foreign key specifies the 'tour' schema explicitly
     template_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("tour.tour_template.id", ondelete="CASCADE"), nullable=False)
