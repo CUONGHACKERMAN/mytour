@@ -1,4 +1,4 @@
-from .types import TourStatus, ServiceType, TourBoundaryType
+from .types import TourStatus, ServiceType, TourBoundaryType, CurrencyType, PassengerType
 from .base import TourBase
 from .tour import (
     TourTemplate,
@@ -7,6 +7,7 @@ from .tour import (
     ItineraryDay,
     Service,
     TourTemplateService,
+    TourDeparturePrice,
 )
 
 __all__ = [
@@ -20,5 +21,8 @@ __all__ = [
     "ItineraryDay",
     "Service",
     "TourTemplateService",
+    "CurrencyType",
+    "PassengerType",
+    "TourDeparturePrice",
 ]
 

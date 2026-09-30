@@ -5,9 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field, field_validator
 from schema.tour import TourStatus, TourBoundaryType
 
-
 class CreateTourTemplateDto(BaseModel):
-    template_code: str = Field(..., max_length=100, description="Unique code for the template, e.g. VN-HAN-SGN-01")
     name: str = Field(..., max_length=200, description="Name of the tour template")
     duration_days: int = Field(..., gt=0, description="Duration of the tour in days")
     total_days: int = Field(..., gt=0, description="Total days")
@@ -16,10 +14,9 @@ class CreateTourTemplateDto(BaseModel):
     status: TourStatus = Field(default=TourStatus.DRAFT, description="Tour status")
     boundary_type: TourBoundaryType = Field(..., description="Tour boundary type (DOMESTIC, INBOUND, OUTBOUND, CROSS_BORDER)")
     internal_notes: Optional[str] = Field(None, description="Internal notes for operations")
-
+    currency_type: CurrencyType = Field(..., description="Currency type")
 
 class UpdateTourTemplateDto(BaseModel):
-    template_code: Optional[str] = Field(None, max_length=100, description="Unique code for the template")
     name: Optional[str] = Field(None, max_length=200, description="Name of the tour template")
     duration_days: Optional[int] = Field(None, gt=0, description="Duration of the tour in days")
     total_days: Optional[int] = Field(None, gt=0, description="Total days")
@@ -28,7 +25,7 @@ class UpdateTourTemplateDto(BaseModel):
     status: Optional[TourStatus] = Field(None, description="Tour status")
     boundary_type: Optional[TourBoundaryType] = Field(None, description="Tour boundary type")
     internal_notes: Optional[str] = Field(None, description="Internal notes for operations")
-
+    currency_type: Optional[CurrencyType] = Field(None, description="Currency type")
 
 class CreateTourCategoryDto(BaseModel):
     name: str = Field(..., max_length=100, description="Category name")
@@ -41,7 +38,6 @@ class UpdateTourCategoryDto(BaseModel):
 
 
 class CreateTourDepartureDto(BaseModel):
-    code: str = Field(..., max_length=100, description="Departure code, e.g. DEP-2026-001")
     template_id: UUID = Field(..., description="Associated tour template ID")
     start_date: date = Field(..., description="Start date of departure")
     end_date: date = Field(..., description="End date of departure")
@@ -56,7 +52,6 @@ class CreateTourDepartureDto(BaseModel):
 
 
 class UpdateTourDepartureDto(BaseModel):
-    code: Optional[str] = Field(None, max_length=100, description="Departure code")
     start_date: Optional[date] = Field(None, description="Start date of departure")
     end_date: Optional[date] = Field(None, description="End date of departure")
     max_capacity: Optional[int] = Field(None, gt=0, description="Maximum seating/booking capacity")

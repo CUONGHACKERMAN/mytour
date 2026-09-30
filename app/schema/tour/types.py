@@ -18,3 +18,14 @@ class TourBoundaryType(str, Enum):
     OUTBOUND = "OUTBOUND"
     CROSS_BORDER = "CROSS_BORDER"
 
+class CurrencyType(str,Enum):
+    VND = "VND"
+    USD = "USD"
+    EUR = "EUR"
+
+class PassengerType(str, Enum):
+    ADULT = "ADULT"
+    CHILD = "CHILD"
+    INFANT = "INFANT"
+    SINGLE_SUPPLEMENT = "SINGLE_SUPPLEMENT"
+

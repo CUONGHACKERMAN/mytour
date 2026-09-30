@@ -1,22 +1,36 @@
 import uuid
 from typing import List, Optional
 from datetime import date
-from sqlalchemy import String, Text, Numeric, ForeignKey, Column, Table, Date, Enum as SAEnum, Uuid, Boolean
+from sqlalchemy import String, Text, Numeric, ForeignKey, Integer, Column, Table, Date, Enum as SAEnum, Uuid, Boolean, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .types import TourStatus, ServiceType, TourBoundaryType
+from .types import TourStatus, ServiceType, TourBoundaryType, CurrencyType, PassengerType
 from .base import TourBase
 from core import DomainBaseModel
 
 
-
+    # TODO: actual_price shouldn't be in departure, but in its own price table (tour_departure_price)
+class TourDeparturePrice(TourBase):
+    __tablename__ = "tour_departure_price"
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key= True, default= uuid.uuid4)
+    departure_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("tour.tour_departure.id", ondelete= "CASCADE"), nullable= False, index= True)
+    passenger_type: Mapped[PassengerType] = mapped_column(SAEnum(PassengerType, schema="tour"), nullable= False)
+    price: Mapped[float] = mapped_column(Numeric(12,2), nullable= False)
+    description: Mapped[Optional[str]] = mapped_column(String(255), nullable= True)
+    departure: Mapped["TourDeparture"] = relationship(back_populates= "prices")
+    ## TODO: (JayNguyen): explain this for me in the next meeting
+    # __table_args__ = (
+    #     UniqueConstraint(
+    #         "departure_id", "passenger_type", name="uq_tour_departure_passenger_type"
+    #     ),
+    # )
 class TourTemplate(TourBase):
     __tablename__ = "tour_template"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     ## TODO: CHECK IF CODE IS UNIQUE CONSTRAINT
     template_code: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
-    name: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(200), unique=True, index=True, nullable=False)
     duration_days: Mapped[int] = mapped_column(nullable=False)
     total_days: Mapped[int] = mapped_column(nullable=False)
     total_nights: Mapped[int] = mapped_column(nullable=False)
@@ -29,11 +43,10 @@ class TourTemplate(TourBase):
     # - OUTBOUND: Local resident travelers traveling abroad
     # - CROSS_BORDER / REGIONAL: Tours spanning multiple international countries
     boundary_type: Mapped[TourBoundaryType] = mapped_column(SAEnum(TourBoundaryType, schema="tour"), nullable=False)
-
     internal_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     # TODO: ADD CURRENCY COLUMN WITH ENUM DATATYPE (VND, USD, EUR)
-
-    # Relationships
+    currency_type: Mapped[CurrencyType] = mapped_column(SAEnum(CurrencyType, schema="tour"), default=CurrencyType.VND, nullable= False)
+    
     categories: Mapped[List["TourCategory"]] = relationship(
         secondary="tour.template_category", back_populates="templates"
     )
@@ -63,19 +76,16 @@ class TourDeparture(TourBase):
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     ## TODO: CHECK IF CODE IS UNIQUE CONSTRAINT
-    code: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    code: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
     # Notice the foreign key specifies the 'tour' schema explicitly
     template_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("tour.tour_template.id", ondelete="CASCADE"), nullable=False)
-
     start_date: Mapped[date] = mapped_column(Date, index=True, nullable=False)
     end_date: Mapped[date] = mapped_column(Date, nullable=False)
-    # TODO: actual_price shouldn't be in departure, but in its own price table (tour_departure_price)
-    # actual_price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
-    max_capacity: Mapped[int] = mapped_column(nullable=False)
+    max_capacity: Mapped[int] = mapped_column(Integer, nullable=False)
     # current_bookings: Mapped[int] = mapped_column(default=0, nullable=False)
 
     template: Mapped["TourTemplate"] = relationship(back_populates="departures")
-
+    prices: Mapped["TourDeparturePrice"] = relationship(back_populates= "departure", cascade= "all, delete-orphan")
 
 class ItineraryDay(TourBase):
     __tablename__ = "itinerary_day"

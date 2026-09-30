@@ -6,15 +6,26 @@ from .repositories import (
     TourCategoryRepository,
     TourDepartureRepository,
 )
-
+import re
+import uuid
 
 class TourService:
     def __init__(self, session: AsyncSession):
         self.__template_repo = TourTemplateRepository(session)
         self.__category_repo = TourCategoryRepository(session)
         self.__departure_repo = TourDepartureRepository(session)
-
+    
+    def _extract_prefix(self, name: str) -> str:
+        clean = re.sub(r"[^a-zA-Z0-9]", "", name or "")
+        if len(clean) >= 4:
+            return clean[:4].upper()
+        return clean.ljust(4, "A").upper()
     async def create_template(self, template_data: dict) -> dict:
+        ### generate code
+        template_id = template_data.get("id") or uuid.uuid4()
+        template_data["id"] = template_id
+        prefix = self._extract_prefix(template_data.get("name", "TOUR"))
+        template_data["template_code"] = f"{prefix}_{template_id.hex[:6]}"
         created = await self.__template_repo.create(template_data)
         return created.to_dict()
 
@@ -65,6 +76,24 @@ class TourService:
         return deleted.to_dict() if deleted else None
 
     async def create_departure(self, departure_data: dict) -> dict:
+        # 1. Tìm template cha để lấy tiền tố hoặc tên tour
+        parent_template = await self.__template_repo.find_one(
+            {"id": departure_data["template_id"]}
+        )
+        if not parent_template:
+            raise ValueError("Template not found")
+
+        # Lấy prefix từ template_code có sẵn (VD: 'DANA_0ad9m1' -> 'DANA')
+        # hoặc gọi self._extract_prefix(parent_template.name)
+        prefix = parent_template.template_code.split("_")[0]
+
+        # 2. Sinh UUID cho departure
+        departure_id = departure_data.get("id") or uuid.uuid4()
+        departure_data["id"] = departure_id
+
+        # 3. Ghép mã code theo format: PREFIX_xxxxxx
+        departure_data["code"] = f"{prefix}_{departure_id.hex[:6]}"
+
         created = await self.__departure_repo.create(departure_data)
         return created.to_dict()
 
