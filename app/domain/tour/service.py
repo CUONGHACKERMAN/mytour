@@ -1,4 +1,5 @@
 from typing import Dict, Any, List, Optional
+from math import ceil
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from .repositories import (
@@ -33,10 +34,31 @@ class TourService:
         template = await self.__template_repo.find_one({"id": template_id})
         return template.to_dict() if template else None
 
-    async def find_templates(self, filters: Dict[str, Any] = dict()) -> List[dict]:
+    async def find_templates(
+        self,
+        filters: Dict[str, Any] = dict(),
+        *,
+        page: int = 1,
+        limit: int = 20,
+    ) -> Dict[str, Any]:
         clean_filters = {k: v for k, v in filters.items() if v is not None}
-        templates = await self.__template_repo.find_many(clean_filters)
-        return [t.to_dict() for t in templates] if templates else []
+        page = max(1, page)
+        limit = max(1, min(limit, 100))
+        total = await self.__template_repo.count(clean_filters)
+        pages = ceil(total / limit) if total > 0 else 0
+        if pages > 0 and page > pages:
+            page = pages
+        offset = (page - 1) * limit
+        templates = await self.__template_repo.find_many(
+            clean_filters, offset=offset, limit=limit
+        )
+        return {
+            "items": [t.to_dict() for t in templates] if templates else [],
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "pages": pages,
+        }
 
     async def update_template(self, template_id: UUID, template_data: dict) -> Optional[dict]:
         clean_data = {k: v for k, v in template_data.items() if v is not None}

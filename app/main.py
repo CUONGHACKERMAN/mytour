@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
+from .core.config import settings
 from .domain import (
     user_router,
     auth_router,
@@ -8,22 +9,23 @@ from .domain import (
 
 app = FastAPI(
     title="MyTour API",
-    version="1.0.0",
-    root_path="/api"
+    version="1.0.0"
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.include_router(user_router)
-app.include_router(auth_router)
-app.include_router(tour_router)
+api = APIRouter(prefix="/api")
+api.include_router(user_router)
+api.include_router(auth_router)
+api.include_router(tour_router)
 
+app.include_router(api)
 
 @app.get("/health", tags=["health"])
 def check_health():

@@ -1,9 +1,17 @@
-from typing import Optional
+from typing import Optional, Any, List
 from datetime import date
 from decimal import Decimal
 from uuid import UUID
 from pydantic import BaseModel, Field, field_validator
-from schema.tour import TourStatus, TourBoundaryType
+from schema.tour import TourStatus, TourBoundaryType, CurrencyType
+
+
+class PaginatedTourTemplatesDto(BaseModel):
+    items: List[dict[str, Any]]
+    total: int
+    page: int
+    limit: int
+    pages: int
 
 class CreateTourTemplateDto(BaseModel):
     name: str = Field(..., max_length=200, description="Name of the tour template")

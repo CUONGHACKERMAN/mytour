@@ -30,7 +30,7 @@ class TourTemplate(TourBase):
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     ## TODO: CHECK IF CODE IS UNIQUE CONSTRAINT
     template_code: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
-    name: Mapped[str] = mapped_column(String(200), unique=True, index=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
     duration_days: Mapped[int] = mapped_column(nullable=False)
     total_days: Mapped[int] = mapped_column(nullable=False)
     total_nights: Mapped[int] = mapped_column(nullable=False)

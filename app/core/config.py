@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE: int = 60
     JWT_REFRESH_TOKEN_EXPIRE: int = 7
+    CORS_ORIGINS: list[str]
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

@@ -1,7 +1,7 @@
 from typing import Type, List, Optional, Any, Dict
 from .database import Base
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update, delete, func
 from uuid import UUID
 from datetime import datetime
 class BaseRepository:
@@ -21,10 +21,29 @@ class BaseRepository:
         result = await self.__session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def find_many(self, filters: Dict[str, Any]) -> Optional[List[Any]]:
-        stmt = select(self.__model).filter_by(**filters, deleted_at=None)
+    async def count(self, filters: Dict[str, Any]) -> int:
+        stmt = (
+            select(func.count())
+            .select_from(self.__model)
+            .filter_by(**filters, deleted_at=None)
+        )
         result = await self.__session.execute(stmt)
-        return result.scalars().all()
+        return int(result.scalar_one())
+
+    async def find_many(
+        self,
+        filters: Dict[str, Any],
+        *,
+        offset: int = 0,
+        limit: Optional[int] = None,
+    ) -> List[Any]:
+        stmt = select(self.__model).filter_by(**filters, deleted_at=None)
+        if offset:
+            stmt = stmt.offset(offset)
+        if limit is not None:
+            stmt = stmt.limit(limit)
+        result = await self.__session.execute(stmt)
+        return list(result.scalars().all())
 
     async def update(self, item_id: UUID, item: Dict[str, Any]) -> Optional[Any]:
         stmt = (

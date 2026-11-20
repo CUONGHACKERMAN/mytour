@@ -13,6 +13,7 @@ from .dto import (
     UpdateTourCategoryDto,
     CreateTourDepartureDto,
     UpdateTourDepartureDto,
+    PaginatedTourTemplatesDto,
 )
 
 router = APIRouter(prefix="/tour", tags=["Tour"])
@@ -37,11 +38,14 @@ async def create_template(
 @router.get(
     "/templates",
     status_code=status.HTTP_200_OK,
-    summary="List tour templates with optional filters"
+    response_model=PaginatedTourTemplatesDto,
+    summary="List tour templates with optional filters and pagination"
 )
 async def get_templates(
     status_filter: Optional[TourStatus] = Query(None, alias="status", description="Filter by status (DRAFT, ACTIVE, CLOSED)"),
     boundary_type: Optional[TourBoundaryType] = Query(None, description="Filter by boundary type"),
+    page: int = Query(1, ge=1, description="Page number (1-based)"),
+    limit: int = Query(20, ge=1, le=100, description="Items per page"),
     service: TourService = Depends(get_tour_service)
 ):
     filters = {}
@@ -49,7 +53,7 @@ async def get_templates(
         filters["status"] = status_filter
     if boundary_type:
         filters["boundary_type"] = boundary_type
-    return await service.find_templates(filters)
+    return await service.find_templates(filters, page=page, limit=limit)
 
 
 @router.get(

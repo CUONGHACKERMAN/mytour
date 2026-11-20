@@ -42,9 +42,9 @@ def upgrade() -> None:
     op.create_index(op.f('ix_tour_tour_departure_price_departure_id'), 'tour_departure_price', ['departure_id'], unique=False, schema='tour')
     op.drop_index(op.f('ix_tour_tour_departure_code'), table_name='tour_departure', schema='tour')
     op.create_index(op.f('ix_tour_tour_departure_code'), 'tour_departure', ['code'], unique=True, schema='tour')
-    op.add_column('tour_template', sa.Column('currency_type', sa.Enum('VND', 'USD', 'EUR', name='currencytype', schema='tour'), nullable=False), schema='tour')
+    op.add_column('tour_template', sa.Column('currency_type', sa.Enum('VND', 'USD', 'EUR', name='currencytype', schema='tour'), nullable=False, server_default='VND'), schema='tour')
     op.drop_index(op.f('ix_tour_tour_template_name'), table_name='tour_template', schema='tour')
-    op.create_index(op.f('ix_tour_tour_template_name'), 'tour_template', ['name'], unique=True, schema='tour')
+    op.create_index(op.f('ix_tour_tour_template_name'), 'tour_template', ['name'], schema='tour')
     # ### end Alembic commands ###
 
 

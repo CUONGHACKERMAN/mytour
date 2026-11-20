@@ -21,7 +21,7 @@ async def create_user(
     return await service.create_user(payload.model_dump())
 
 @router.get(
-    "/users",
+    "",
     status_code=status.HTTP_200_OK
 )
 async def get_user(
