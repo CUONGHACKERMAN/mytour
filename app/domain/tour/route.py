@@ -11,6 +11,8 @@ from .dto import (
     UpdateTourTemplateDto,
     CreateTourCategoryDto,
     UpdateTourCategoryDto,
+    CreateServiceDto,
+    UpdateServiceDto,
     CreateTourDepartureDto,
     UpdateTourDepartureDto,
     PaginatedTourTemplatesDto,
@@ -32,7 +34,13 @@ async def create_template(
     payload: CreateTourTemplateDto,
     service: TourService = Depends(get_tour_service)
 ):
-    return await service.create_template(payload.model_dump())
+    try:
+        return await service.create_template(payload.model_dump())
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
 
 
 @router.get(
@@ -84,9 +92,15 @@ async def update_template(
     payload: UpdateTourTemplateDto,
     service: TourService = Depends(get_tour_service)
 ):
-    updated = await service.update_template(
-        template_id, payload.model_dump(exclude_unset=True)
-    )
+    try:
+        updated = await service.update_template(
+            template_id, payload.model_dump(exclude_unset=True)
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
     if not updated:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -190,6 +204,86 @@ async def delete_category(
             detail=f"Tour category '{category_id}' not found"
         )
     return {"message": "Tour category deleted successfully", "id": category_id}
+
+@router.post(
+    "/services",
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a catalog service"
+)
+async def create_service(
+    payload: CreateServiceDto,
+    service: TourService = Depends(get_tour_service)
+):
+    return await service.create_service(payload.model_dump())
+
+
+@router.get(
+    "/services",
+    status_code=status.HTTP_200_OK,
+    summary="List catalog services"
+)
+async def get_services(
+    service: TourService = Depends(get_tour_service)
+):
+    return await service.find_services()
+
+
+@router.get(
+    "/services/{service_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Get catalog service by ID"
+)
+async def get_service(
+    service_id: UUID,
+    service: TourService = Depends(get_tour_service)
+):
+    item = await service.get_service_by_id(service_id)
+    if not item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Service '{service_id}' not found"
+        )
+    return item
+
+
+@router.put(
+    "/services/{service_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Update a catalog service"
+)
+async def update_service(
+    service_id: UUID,
+    payload: UpdateServiceDto,
+    service: TourService = Depends(get_tour_service)
+):
+    updated = await service.update_service(
+        service_id, payload.model_dump(exclude_unset=True)
+    )
+    if not updated:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Service '{service_id}' not found"
+        )
+    return updated
+
+
+@router.delete(
+    "/services/{service_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Delete a catalog service"
+)
+async def delete_service(
+    service_id: UUID,
+    service: TourService = Depends(get_tour_service)
+):
+    deleted = await service.delete_service(service_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Service '{service_id}' not found"
+        )
+    return {"message": "Service deleted successfully", "id": service_id}
+
 
 @router.post(
     "/departures",

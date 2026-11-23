@@ -46,7 +46,9 @@ class TourTemplate(TourBase):
     internal_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     # TODO: ADD CURRENCY COLUMN WITH ENUM DATATYPE (VND, USD, EUR)
     currency_type: Mapped[CurrencyType] = mapped_column(SAEnum(CurrencyType, schema="tour"), default=CurrencyType.VND, nullable= False)
-    
+    hero_image_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    gallery_image_urls: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
     categories: Mapped[List["TourCategory"]] = relationship(
         secondary="tour.template_category", back_populates="templates"
     )

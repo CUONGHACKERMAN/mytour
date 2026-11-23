@@ -8,6 +8,7 @@ SQLAlchemy==2.0.51
 typing_extensions==4.16.0
 fastapi
 uvicorn
+python-multipart
 pydantic
 pydantic-settings
 asyncpg

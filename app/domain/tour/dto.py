@@ -3,7 +3,7 @@ from datetime import date
 from decimal import Decimal
 from uuid import UUID
 from pydantic import BaseModel, Field, field_validator
-from schema.tour import TourStatus, TourBoundaryType, CurrencyType
+from schema.tour import TourStatus, TourBoundaryType, CurrencyType, ServiceType
 
 
 class PaginatedTourTemplatesDto(BaseModel):
@@ -12,6 +12,12 @@ class PaginatedTourTemplatesDto(BaseModel):
     page: int
     limit: int
     pages: int
+
+
+class TemplateServiceLinkDto(BaseModel):
+    service_id: UUID = Field(..., description="Catalog service ID to attach")
+    is_included: bool = Field(True, description="Whether the service is included in the tour")
+
 
 class CreateTourTemplateDto(BaseModel):
     name: str = Field(..., max_length=200, description="Name of the tour template")
@@ -23,6 +29,17 @@ class CreateTourTemplateDto(BaseModel):
     boundary_type: TourBoundaryType = Field(..., description="Tour boundary type (DOMESTIC, INBOUND, OUTBOUND, CROSS_BORDER)")
     internal_notes: Optional[str] = Field(None, description="Internal notes for operations")
     currency_type: CurrencyType = Field(..., description="Currency type")
+    hero_image_url: Optional[str] = Field(None, max_length=255, description="Hero image public URL")
+    gallery_image_urls: List[str] = Field(
+        default_factory=list,
+        description="Gallery image public URLs",
+    )
+    category_ids: List[UUID] = Field(default_factory=list, description="Tour category IDs to attach")
+    services: List[TemplateServiceLinkDto] = Field(
+        default_factory=list,
+        description="Services linked to this template",
+    )
+
 
 class UpdateTourTemplateDto(BaseModel):
     name: Optional[str] = Field(None, max_length=200, description="Name of the tour template")
@@ -34,6 +51,17 @@ class UpdateTourTemplateDto(BaseModel):
     boundary_type: Optional[TourBoundaryType] = Field(None, description="Tour boundary type")
     internal_notes: Optional[str] = Field(None, description="Internal notes for operations")
     currency_type: Optional[CurrencyType] = Field(None, description="Currency type")
+    hero_image_url: Optional[str] = Field(None, max_length=255, description="Hero image public URL")
+    gallery_image_urls: Optional[List[str]] = Field(
+        None,
+        description="Replace gallery image URLs when provided",
+    )
+    category_ids: Optional[List[UUID]] = Field(None, description="Replace attached category IDs when provided")
+    services: Optional[List[TemplateServiceLinkDto]] = Field(
+        None,
+        description="Replace linked services when provided",
+    )
+
 
 class CreateTourCategoryDto(BaseModel):
     name: str = Field(..., max_length=100, description="Category name")
@@ -43,6 +71,18 @@ class CreateTourCategoryDto(BaseModel):
 class UpdateTourCategoryDto(BaseModel):
     name: Optional[str] = Field(None, max_length=100, description="Category name")
     description: Optional[str] = Field(None, description="Category description")
+
+
+class CreateServiceDto(BaseModel):
+    name: str = Field(..., max_length=150, description="Service name")
+    service_type: ServiceType = Field(..., description="Service type")
+    description: Optional[str] = Field(None, description="Service description")
+
+
+class UpdateServiceDto(BaseModel):
+    name: Optional[str] = Field(None, max_length=150, description="Service name")
+    service_type: Optional[ServiceType] = Field(None, description="Service type")
+    description: Optional[str] = Field(None, description="Service description")
 
 
 class CreateTourDepartureDto(BaseModel):
